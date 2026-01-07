@@ -1,0 +1,7 @@
+{
+  "name": "PureBG - AI Background Remover",
+  "description": "A professional-grade background removal tool powered by Gemini AI. Simply upload an image and let our advanced neural networks isolate your subjects with precision.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
