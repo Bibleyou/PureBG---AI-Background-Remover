@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface NavbarProps {
@@ -25,7 +24,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate, activeTab }) => {
               onClick={() => onNavigate('home')}
               className={`text-sm font-medium transition-colors ${activeTab === 'home' ? 'text-indigo-600' : 'text-gray-600 hover:text-gray-900'}`}
             >
-              Home
+              Início
             </button>
             <button 
               onClick={() => onNavigate('tool')}
@@ -35,7 +34,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate, activeTab }) => {
                 : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
               }`}
             >
-              Remove Background
+              Remover Fundo
             </button>
           </div>
         </div>

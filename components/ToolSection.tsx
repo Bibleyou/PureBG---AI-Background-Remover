@@ -1,5 +1,4 @@
-
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { removeBackground } from '../services/geminiService';
 import { fileToBase64 } from '../utils/fileUtils';
 
@@ -21,7 +20,7 @@ export const ToolSection: React.FC = () => {
         const base64 = await fileToBase64(file);
         setSelectedImage(base64);
       } catch (err) {
-        setError("Failed to load image. Please try another one.");
+        setError("Erro ao carregar a imagem. Tente outro arquivo.");
       }
     }
   };
@@ -36,7 +35,7 @@ export const ToolSection: React.FC = () => {
       setResultImage(result);
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "An error occurred during processing.");
+      setError(err.message || "Ocorreu um erro inesperado.");
     } finally {
       setIsProcessing(false);
     }
@@ -46,7 +45,7 @@ export const ToolSection: React.FC = () => {
     if (!resultImage) return;
     const link = document.createElement('a');
     link.href = resultImage;
-    link.download = `purebg-${Date.now()}.png`;
+    link.download = `purebg-ia-${Date.now()}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -58,10 +57,10 @@ export const ToolSection: React.FC = () => {
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
           <div className="p-8 sm:p-12 text-center">
             <h2 className="text-3xl font-extrabold text-gray-900 mb-2">
-              Background Remover
+              Removedor de Fundo
             </h2>
             <p className="text-gray-500 mb-10 max-w-lg mx-auto">
-              Upload your photo below. Our AI will automatically detect the subject and remove everything else.
+              Envie sua foto. Nossa IA detectará o objeto e removerá tudo ao redor automaticamente.
             </p>
 
             <div className="space-y-8">
@@ -83,9 +82,9 @@ export const ToolSection: React.FC = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                       </svg>
                     </div>
-                    <p className="text-lg font-bold text-gray-900 mb-1">Upload an image</p>
-                    <p className="text-gray-500">Drag & drop or click to browse</p>
-                    <p className="text-xs text-gray-400 mt-4">Supports PNG, JPG, JPEG</p>
+                    <p className="text-lg font-bold text-gray-900 mb-1">Escolher uma imagem</p>
+                    <p className="text-gray-500">Arraste e solte ou clique para navegar</p>
+                    <p className="text-xs text-gray-400 mt-4">Suporta PNG, JPG, JPEG</p>
                   </div>
                 </div>
               ) : (
@@ -102,7 +101,7 @@ export const ToolSection: React.FC = () => {
                         <div className="flex flex-col items-center">
                           <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
                           <span className="text-indigo-800 font-bold tracking-wider uppercase text-xs animate-pulse">
-                            Processing Image...
+                            Processando Imagem...
                           </span>
                         </div>
                       </div>
@@ -115,13 +114,13 @@ export const ToolSection: React.FC = () => {
                         onMouseLeave={() => setShowOriginal(false)}
                         className="absolute bottom-4 right-4 bg-black/60 hover:bg-black/80 text-white px-4 py-2 rounded-full text-xs font-bold transition-colors select-none"
                       >
-                        Hold to Compare
+                        Segure para Comparar
                       </button>
                     )}
                   </div>
 
                   {error && (
-                    <div className="p-4 rounded-xl bg-red-50 text-red-700 text-sm font-medium border border-red-100">
+                    <div className="p-4 rounded-xl bg-red-50 text-red-700 text-sm font-medium border border-red-100 whitespace-pre-line">
                       {error}
                     </div>
                   )}
@@ -133,13 +132,13 @@ export const ToolSection: React.FC = () => {
                           onClick={() => setSelectedImage(null)}
                           className="px-8 py-3 rounded-full text-sm font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
                         >
-                          Cancel
+                          Cancelar
                         </button>
                         <button 
                           onClick={handleProcess}
                           className="px-8 py-3 rounded-full text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all active:scale-95"
                         >
-                          Remove Background
+                          Remover Fundo agora
                         </button>
                       </>
                     )}
@@ -153,7 +152,7 @@ export const ToolSection: React.FC = () => {
                           }}
                           className="px-8 py-3 rounded-full text-sm font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
                         >
-                          Upload New
+                          Enviar Nova
                         </button>
                         <button 
                           onClick={handleDownload}
@@ -162,7 +161,7 @@ export const ToolSection: React.FC = () => {
                           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                           </svg>
-                          Download Result
+                          Baixar Resultado (PNG)
                         </button>
                       </>
                     )}
@@ -174,7 +173,7 @@ export const ToolSection: React.FC = () => {
         </div>
         
         <div className="mt-8 text-center text-gray-400 text-sm">
-          <p>Privacy matters: We don't store your images permanently. They are processed securely.</p>
+          <p>Privacidade garantida: Não armazenamos suas imagens permanentemente. O processamento é seguro.</p>
         </div>
       </div>
     </section>
