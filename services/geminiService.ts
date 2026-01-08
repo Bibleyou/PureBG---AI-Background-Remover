@@ -1,15 +1,31 @@
 import { GoogleGenAI } from "https://esm.sh/@google/genai@^1.34.0";
 
 /**
- * Usa o modelo Gemini 2.5 Flash Image para remover o fundo.
- * O modelo é instruído a colocar o objeto em fundo branco puro (#FFFFFF).
- * Em seguida, o código remove o branco para gerar transparência real.
+ * Uses Gemini 2.5 Flash Image model to perform background removal.
+ * The model is instructed to place the subject on a pure white background.
+ * Then the browser converts that white to transparent.
  */
 export async function removeBackground(base64Image: string): Promise<string> {
-  const apiKey = process.env.API_KEY;
+  // Acesso direto via process.env que é injetado pelo sistema de build
+  let apiKey = "";
   
+  try {
+    // Tenta diferentes formas de acesso para garantir compatibilidade com ambientes Vercel/Vite
+    apiKey = (typeof process !== 'undefined' && process.env?.API_KEY) || 
+             (import.meta as any).env?.VITE_API_KEY || 
+             "";
+  } catch (e) {
+    console.warn("Ambiente não suporta process.env clássico, tentando alternativas...");
+  }
+
+  // Se ainda estiver vazio, mas existir a string "undefined" injetada
   if (!apiKey || apiKey === "undefined") {
-    throw new Error("API KEY NÃO CONFIGURADA: Vá em 'Settings > Environment Variables' na Vercel, adicione 'API_KEY' e faça o 'Redeploy'.");
+     throw new Error(
+      "API KEY NÃO DETECTADA: Siga estes 3 passos:\n" +
+      "1. Na Vercel, em 'Settings > Environment Variables', o nome deve ser exatamente API_KEY.\n" +
+      "2. Clique em 'Save'.\n" +
+      "3. Vá na aba 'Deployments', clique nos 3 pontinhos do último deploy e selecione 'REDEPLOY'. Sem isso, o código antigo continua rodando sem a chave."
+    );
   }
 
   const ai = new GoogleGenAI({ apiKey });
@@ -29,41 +45,36 @@ export async function removeBackground(base64Image: string): Promise<string> {
             },
           },
           {
-            text: 'Extract the main subject from this image. Place the subject on a solid, perfectly pure white background (#FFFFFF). Remove all shadows, reflections, and other background elements. Ensure the subject edges are sharp. Return ONLY the resulting image.'
+            text: 'Isolate the main subject. Remove all background. Place the subject on a solid #FFFFFF white background. Ensure clean and sharp edges. Return only the image.'
           },
         ],
       },
     });
 
     const candidate = response.candidates?.[0];
-    if (!candidate) throw new Error("A IA não retornou uma resposta. Tente novamente.");
+    if (!candidate) throw new Error("A IA não retornou uma imagem válida.");
 
     for (const part of candidate.content.parts) {
       if (part.inlineData) {
         const resultBase64 = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-        // Converte o fundo branco gerado pela IA em transparência real no navegador
         return await makeWhiteTransparent(resultBase64);
       }
     }
 
-    throw new Error("Não foi possível processar esta imagem específica. Tente outra.");
+    throw new Error("A IA processou, mas não retornou os dados da imagem. Tente novamente.");
   } catch (error: any) {
-    console.error("Erro Gemini:", error);
+    console.error("Gemini Error:", error);
     
-    if (error.status === 429) {
-      throw new Error("Limite da API Gratuita atingido. Aguarde um minuto e tente novamente.");
-    }
+    // Tratamento específico para erros comuns da API
+    if (error.status === 403) throw new Error("A chave de API não tem permissão para este modelo. Verifique se é uma chave do Google AI Studio.");
+    if (error.status === 429) throw new Error("Limite de uso atingido (Rate Limit). Aguarde 60 segundos.");
     
-    if (error.message?.includes("API_KEY")) {
-      throw new Error("Chave de API inválida ou não configurada corretamente.");
-    }
-    
-    throw new Error(error.message || "Ocorreu um erro na comunicação com a IA.");
+    throw new Error(error.message || "Erro na comunicação com a Inteligência Artificial.");
   }
 }
 
 /**
- * Algoritmo para tornar o fundo branco puro (#FFFFFF) transparente.
+ * Local process to turn pure white pixels into transparency.
  */
 async function makeWhiteTransparent(dataUrl: string): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -74,34 +85,25 @@ async function makeWhiteTransparent(dataUrl: string): Promise<string> {
       canvas.width = img.width;
       canvas.height = img.height;
       const ctx = canvas.getContext("2d", { willReadFrequently: true });
-      
-      if (!ctx) {
-        resolve(dataUrl);
-        return;
-      }
+      if (!ctx) return resolve(dataUrl);
 
       ctx.drawImage(img, 0, 0);
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const data = imageData.data;
-      
-      // Sensibilidade para remover o branco (240-255)
-      const threshold = 240;
+      const threshold = 242; // Sensibilidade para o branco
 
       for (let i = 0; i < data.length; i += 4) {
         const r = data[i];
         const g = data[i + 1];
         const b = data[i + 2];
-        
-        // Se a cor for próxima ao branco puro, torna o pixel transparente (alpha = 0)
         if (r > threshold && g > threshold && b > threshold) {
-          data[i + 3] = 0;
+          data[i + 3] = 0; // Torna transparente
         }
       }
-
       ctx.putImageData(imageData, 0, 0);
       resolve(canvas.toDataURL("image/png"));
     };
-    img.onerror = () => reject(new Error("Erro ao processar a transparência da imagem."));
+    img.onerror = () => reject(new Error("Erro ao finalizar a transparência da imagem."));
     img.src = dataUrl;
   });
 }
