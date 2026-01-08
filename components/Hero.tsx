@@ -12,22 +12,22 @@ export const Hero: React.FC<HeroProps> = ({ onStart }) => {
           <div className="sm:text-center md:max-w-2xl md:mx-auto lg:col-span-6 lg:text-left flex flex-col justify-center">
             <h1>
               <span className="block text-sm font-semibold uppercase tracking-wide text-gray-500 sm:text-base lg:text-sm xl:text-base">
-                Transformação por Inteligência Artificial
+                Inteligência Artificial de Ponta
               </span>
               <span className="mt-1 block text-4xl tracking-tight font-extrabold sm:text-5xl xl:text-6xl">
                 <span className="block text-gray-900">Remova fundos</span>
-                <span className="block gradient-text">num piscar de olhos</span>
+                <span className="block gradient-text">em alta resolução</span>
               </span>
             </h1>
-            <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-xl lg:text-lg xl:text-xl">
-              Envie uma imagem e remova o fundo com 100% de precisão. Sem ferramentas complexas, sem assinaturas caras.
+            <p className="mt-4 text-base text-gray-500 sm:mt-5 sm:text-xl lg:text-lg xl:text-xl">
+              O PureBG usa a rede neural Gemini para isolar objetos com perfeição. Rápido, seguro e profissional.
             </p>
-            <div className="mt-8 sm:max-w-lg sm:mx-auto sm:text-center lg:text-left lg:mx-0">
+            <div className="mt-10 sm:max-w-lg sm:mx-auto sm:text-center lg:text-left lg:mx-0 flex flex-col sm:flex-row gap-4">
               <button
                 onClick={onStart}
-                className="inline-flex items-center px-8 py-4 border border-transparent text-base font-medium rounded-full shadow-lg text-white bg-indigo-600 hover:bg-indigo-700 transition-all transform hover:scale-105 active:scale-95"
+                className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-bold rounded-2xl shadow-xl text-white bg-indigo-600 hover:bg-indigo-700 transition-all transform hover:-translate-y-1 active:scale-95"
               >
-                Começar Agora Grátis
+                Abrir Ferramenta
                 <svg className="ml-2 -mr-1 h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
                 </svg>
@@ -36,19 +36,12 @@ export const Hero: React.FC<HeroProps> = ({ onStart }) => {
           </div>
           
           <div className="mt-12 relative sm:max-w-lg sm:mx-auto lg:mt-0 lg:max-w-none lg:mx-0 lg:col-span-6 lg:flex lg:items-center">
-            <div className="relative mx-auto w-full rounded-2xl shadow-2xl overflow-hidden group">
+            <div className="relative mx-auto w-full rounded-[2.5rem] shadow-2xl overflow-hidden group p-2 bg-white ring-1 ring-gray-200">
               <img
-                className="w-full h-auto transition-transform duration-700 group-hover:scale-105"
+                className="w-full h-auto rounded-[2rem] transition-transform duration-700 group-hover:scale-105"
                 src="https://picsum.photos/id/64/800/600"
                 alt="Exemplo de remoção de fundo"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-              <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm p-4 rounded-xl shadow-lg transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-gray-800">Processamento Concluído</span>
-                  <span className="px-2 py-1 rounded-md bg-green-100 text-green-700 text-xs font-semibold">99% de Precisão</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>

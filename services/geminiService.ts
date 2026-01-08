@@ -1,34 +1,11 @@
-import { GoogleGenAI } from "https://esm.sh/@google/genai@^1.34.0";
+import { GoogleGenAI } from "@google/genai";
 
 /**
  * Uses Gemini 2.5 Flash Image model to perform background removal.
- * The model is instructed to place the subject on a pure white background.
- * Then the browser converts that white to transparent.
  */
 export async function removeBackground(base64Image: string): Promise<string> {
-  // Acesso direto via process.env que é injetado pelo sistema de build
-  let apiKey = "";
-  
-  try {
-    // Tenta diferentes formas de acesso para garantir compatibilidade com ambientes Vercel/Vite
-    apiKey = (typeof process !== 'undefined' && process.env?.API_KEY) || 
-             (import.meta as any).env?.VITE_API_KEY || 
-             "";
-  } catch (e) {
-    console.warn("Ambiente não suporta process.env clássico, tentando alternativas...");
-  }
-
-  // Se ainda estiver vazio, mas existir a string "undefined" injetada
-  if (!apiKey || apiKey === "undefined") {
-     throw new Error(
-      "API KEY NÃO DETECTADA: Siga estes 3 passos:\n" +
-      "1. Na Vercel, em 'Settings > Environment Variables', o nome deve ser exatamente API_KEY.\n" +
-      "2. Clique em 'Save'.\n" +
-      "3. Vá na aba 'Deployments', clique nos 3 pontinhos do último deploy e selecione 'REDEPLOY'. Sem isso, o código antigo continua rodando sem a chave."
-    );
-  }
-
-  const ai = new GoogleGenAI({ apiKey });
+  // A API Key deve ser obtida exclusivamente de process.env.API_KEY
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   const mimeType = base64Image.split(';')[0].split(':')[1];
   const imageData = base64Image.split(',')[1];
@@ -45,7 +22,7 @@ export async function removeBackground(base64Image: string): Promise<string> {
             },
           },
           {
-            text: 'Isolate the main subject. Remove all background. Place the subject on a solid #FFFFFF white background. Ensure clean and sharp edges. Return only the image.'
+            text: 'Isolate the main subject from the image. Remove all background elements. Place the subject on a solid #FFFFFF white background. Ensure clean and sharp edges. Return only the image.'
           },
         ],
       },
@@ -61,21 +38,15 @@ export async function removeBackground(base64Image: string): Promise<string> {
       }
     }
 
-    throw new Error("A IA processou, mas não retornou os dados da imagem. Tente novamente.");
+    throw new Error("A IA processou o pedido mas não gerou um arquivo de imagem.");
   } catch (error: any) {
     console.error("Gemini Error:", error);
-    
-    // Tratamento específico para erros comuns da API
-    if (error.status === 403) throw new Error("A chave de API não tem permissão para este modelo. Verifique se é uma chave do Google AI Studio.");
-    if (error.status === 429) throw new Error("Limite de uso atingido (Rate Limit). Aguarde 60 segundos.");
-    
-    throw new Error(error.message || "Erro na comunicação com a Inteligência Artificial.");
+    if (error.status === 403) throw new Error("Chave de API inválida ou sem permissões.");
+    if (error.status === 429) throw new Error("Limite de cota atingido. Tente novamente em breve.");
+    throw new Error(error.message || "Erro na comunicação com o Gemini AI.");
   }
 }
 
-/**
- * Local process to turn pure white pixels into transparency.
- */
 async function makeWhiteTransparent(dataUrl: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -90,20 +61,19 @@ async function makeWhiteTransparent(dataUrl: string): Promise<string> {
       ctx.drawImage(img, 0, 0);
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const data = imageData.data;
-      const threshold = 242; // Sensibilidade para o branco
+      const threshold = 245;
 
       for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
+        const r = data[i], g = data[i + 1], b = data[i + 2];
+        // Se a cor for muito próxima de branco puro, torna transparente
         if (r > threshold && g > threshold && b > threshold) {
-          data[i + 3] = 0; // Torna transparente
+          data[i + 3] = 0;
         }
       }
       ctx.putImageData(imageData, 0, 0);
       resolve(canvas.toDataURL("image/png"));
     };
-    img.onerror = () => reject(new Error("Erro ao finalizar a transparência da imagem."));
+    img.onerror = () => reject(new Error("Erro ao gerar transparência."));
     img.src = dataUrl;
   });
 }
